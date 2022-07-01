@@ -2,6 +2,8 @@
 
 This project is with Redux, typeScript, Storybook, and unit testing.
 
+# Application principal
+
 "_folder structure_": UpperCamelCase to name the files except for SCSS. Folder sturcture sample as follow:
 
 ```

@@ -1,0 +1,15 @@
+// Global CSS
+@import './mixins';
+@import './functions';
+@import './breakpoints';
+@import './variables';
+@import './style';
+
+// container
+@import '../containers/Dashboard/dashboard';
+
+// component
+@import '../components/Page404/page404';
+@import '../components/Shared/Button/button';
+@import '../components/Shared/CheckBox/checkBox';
+@import '../components/Shared/Dropdown/dropdown';

@@ -1,0 +1,124 @@
+.dashboard {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f0f4f7;
+  .card {
+    max-width: 550px;
+    height: 600px;
+    flex-grow: 1;
+    border-radius: $border-radius;
+    box-shadow: 0 0.9px 3px 0 rgba(27, 28, 28, 0.19), 0 0.3px 1px 0 rgba(27, 28, 28, 0.04);
+    background-color: $white-1;
+    padding: rem(12px);
+    @include lessThan($screen-sm) {
+      height: 100%;
+    }
+    &--header {
+      height: 50px;
+    }
+    &--current {
+      height: 100px;
+      display: flex;
+      justify-content: space-between;
+      margin: rem(14px) 0;
+      .current--left {
+        display: flex;
+        gap: 10px;
+        .temprature {
+          font-family: Google Sans, arial, sans-serif;
+          font-size: 30px;
+          color: $grey-2;
+        }
+        .toggle--FahrenCels {
+          display: flex;
+          height: 20px;
+          .active {
+            color: #9aa0a6;
+          }
+          > div {
+            width: 25px;
+            &:hover:not(.active) {
+              cursor: pointer;
+            }
+          }
+          div:nth-child(1) {
+            border-right: 1px solid;
+          }
+          div:nth-child(2) {
+            text-align: right;
+          }
+        }
+        .temp--info {
+          display: flex;
+          flex-direction: column;
+          font-size: $mdFontSize;
+          color: #9aa0a6;
+        }
+      }
+      .current-right {
+        display: flex;
+        flex-direction: column;
+        align-items: self-end;
+        .city--name {
+          color: $grey-2;
+          font-size: 22px;
+          line-height: 26px;
+          font-size: $mdFontSize;
+        }
+        .city--date {
+          color: #9aa0a6;
+          font-size: 22px;
+          line-height: 26px;
+          font-size: $mdFontSize;
+          text-transform: capitalize;
+        }
+        .city--condition {
+          color: #9aa0a6;
+          font-size: 22px;
+          line-height: 26px;
+          font-size: $mdFontSize;
+          text-transform: capitalize;
+        }
+      }
+    }
+    &--daily {
+      height: 150px;
+      display: flex;
+      gap: 5px;
+      @include lessThan($screen-sm) {
+        flex-wrap: wrap;
+      }
+      .daily--item {
+        height: 80%;
+        width: 80px;
+        margin-top: rem(32px);
+        background: #0000001a;
+        border-radius: $border-radius;
+        box-shadow: 0 0.9px 3px 0 rgba(27, 28, 28, 0.19), 0 0.3px 1px 0 rgba(27, 28, 28, 0.04);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        .item-title {
+          font-size: $smFontSize;
+        }
+        .item--range {
+          font-size: $smFontSize;
+          .active {
+            color: #9aa0a6;
+          }
+          &::after {
+            content: '\00b0';
+          }
+        }
+        .item--img {
+          img {
+            width: 60px;
+          }
+        }
+      }
+    }
+  }
+}

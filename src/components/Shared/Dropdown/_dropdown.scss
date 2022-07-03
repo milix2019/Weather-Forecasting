@@ -1,0 +1,12 @@
+.reactSelectContainer {
+  font-size: $smFontSize;
+  .countryFlagsContainer {
+    display: flex;
+    flex: 0 0 auto;
+    img {
+      margin-right: rem(5px);
+    }
+  }
+}
+
+@import './flags';

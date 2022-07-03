@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { CSSProperties, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as actionCreators from '../../redux/actionCreators/weatherActionCreator';
 import { State } from '../../redux/reducers/index';
-import { AsyncDropdown } from '../../components/Shared/Dropdown';
-import { promiseOptions } from '../../components/Shared/Dropdown/AsyncDropdown/AsyncDropdown.stories';
+import { Dropdown } from '../../components/Shared/Dropdown';
 import { Charts, ChartProps } from '../../components/Shared/Chart/Chart';
+import { getRequest } from '../../helper/apiHandler';
+import { Option, GroupedOption } from '../../components/Shared/Dropdown/SimpleDropdown/Dropdown';
 
+// initial chart data
 const chartData: ChartProps = {
   series: [],
   options: {
@@ -72,10 +74,32 @@ const chartData: ChartProps = {
   chartType: 'area',
 };
 
+// dropdown css setting
+const groupStyles = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+};
+const groupBadgeStyles: CSSProperties = {
+  backgroundColor: '#EBECF0',
+  borderRadius: '2em',
+  color: '#172B4D',
+  display: 'inline-block',
+  fontSize: 12,
+  fontWeight: 'normal',
+  lineHeight: '1',
+  minWidth: 1,
+  padding: '0.16666666666667em 0.5em',
+  textAlign: 'center',
+};
+
+// to change from Fahren to Cels
 type Unit = 'metric' | 'imperial';
 
+// Global Variable for LocalStorage
+const localStorageDefaultKey = 'selected';
+
 const Dashboard = (): JSX.Element => {
-  // const history = useNavigate();
   // Redux setting hooks
   const dispatch = useDispatch();
 
@@ -83,25 +107,35 @@ const Dashboard = (): JSX.Element => {
     () => bindActionCreators(actionCreators, dispatch),
     [dispatch]
   );
+
   // Redux State - get data from state
   const { current, timezone, daily, hourly } = useSelector((state: State) => state.weather);
-  console.log(current, timezone, daily, 'kkk', hourly);
+
+  const [unit, setUnit] = useState<Unit>('metric');
+  const [chart, setChart] = useState<ChartProps>(chartData);
+  const [cities, setCities] = useState<GroupedOption[]>();
+  const [selectedCity, setSelectedCity] = useState<Option>({
+    label: 'Netherlands',
+    value: 'Netherlands',
+    abbr: 'NL',
+    lat: 52.5,
+    lon: 5.75,
+  });
 
   useEffect(() => {
-    getWeatherByLocation(3.139, 101.6869, 'metric');
+    getWeatherByLocation(selectedCity.lat, selectedCity.lon, 'metric');
+    getCitiesData();
   }, [getWeatherByLocation]);
 
+  // prepChart data
   useEffect(() => {
     chartDataPrep();
   }, [hourly]);
 
-  const [unit, setUnit] = useState<Unit>('metric');
-  const [chart, setChart] = useState<ChartProps>(chartData);
-
   // toggle the unit to change wind & temp
   const handleUnit = (unit: Unit) => {
     setUnit(unit);
-    getWeatherByLocation(3.139, 101.6869, unit);
+    getWeatherByLocation(selectedCity.lat, selectedCity.lon, unit);
   };
 
   // Get the name of the week
@@ -119,6 +153,7 @@ const Dashboard = (): JSX.Element => {
     const d = new Date(time * 1000).getDay();
     return days[d];
   };
+
   // round the number
   const roundNumber = (numb: number): number => {
     return numb && Math.round(numb);
@@ -157,10 +192,10 @@ const Dashboard = (): JSX.Element => {
     ['Temp', 'Wind'].map((d) => {
       series.push({
         name: d,
-        // data: d === 'Temp' ? ArrayTemp : d === 'Wind' ? ArrayWind : ArrayPressure,
         data: d === 'Temp' ? ArrayTemp : ArrayWind,
       });
     });
+
     setChart({
       ...chart,
       series: series,
@@ -171,19 +206,90 @@ const Dashboard = (): JSX.Element => {
         },
       },
     });
-    console.log(chart, series);
   };
+
+  // get Dropdown Data
+  const getCitiesData = () => {
+    getRequest(`https://countriesnow.space/api/v0.1/countries/positions`, (res) => {
+      if (res.success) {
+        const { data } = res;
+        const tempData: Option[] = [];
+
+        Array.isArray(data) &&
+          data.map((d: { [key: string]: string | number }) => {
+            tempData.push({
+              label: d.name as string,
+              value: d.name as string,
+              lat: d.lat as number,
+              lon: d.long as number,
+              abbr: d.iso2 as string,
+            });
+          });
+
+        const groupedOptions: GroupedOption[] = [
+          {
+            label: 'LocalStorage',
+            options:
+              readLocalStorage(localStorageDefaultKey) === null
+                ? []
+                : readLocalStorage(localStorageDefaultKey),
+          },
+          {
+            label: 'Cities',
+            options: tempData,
+          },
+        ];
+
+        setCities(groupedOptions);
+      } else {
+        console.log('error', res.message);
+      }
+    });
+  };
+
+  // Write to LocalStorage
+  const writeToLocalStorage = (value: Option, key?: string) => {
+    let array: Option[] = readLocalStorage(key) ? readLocalStorage(key) : [];
+    array = [
+      ...array,
+      {
+        label: value?.label,
+        value: value?.value,
+        lon: value?.lon,
+        lat: value?.lat,
+        abbr: value?.abbr,
+      },
+    ];
+    localStorage.setItem(key ?? localStorageDefaultKey, JSON.stringify(array));
+  };
+
+  // read existing data from localStorage
+  const readLocalStorage = (key?: string) => {
+    return JSON.parse(localStorage.getItem(key ?? localStorageDefaultKey));
+  };
+
+  const formatGroupLabel = (data: GroupedOption) => (
+    <div style={groupStyles}>
+      <span>{data.label}</span>
+      <span style={groupBadgeStyles}>{data.options.length}</span>
+    </div>
+  );
 
   return (
     <div className="dashboard">
       <div className="card">
         <div className="card--header">
-          <AsyncDropdown
+          <Dropdown
             name="city"
-            onChange={(name, value) => console.log(name, value)}
+            onChange={(_, value: Option) => {
+              setSelectedCity(value);
+              getWeatherByLocation(value?.lat, value?.lon, unit);
+              writeToLocalStorage(value, localStorageDefaultKey);
+            }}
             isMulti={false}
-            promiseOptions={promiseOptions}
-            defaultOptions={true}
+            options={cities}
+            value={selectedCity}
+            formatGroupLabel={formatGroupLabel}
           />
         </div>
         {!!timezone ? (

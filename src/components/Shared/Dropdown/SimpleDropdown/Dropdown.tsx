@@ -4,13 +4,18 @@ import { FlagPlaceholder } from '../../../../assets';
 import { FormItemChildProps } from '../../types';
 
 export interface Option {
-  value: string;
+  value?: string;
   label: string;
   isFixed?: boolean;
   isDisabled?: boolean;
   abbr?: string;
   lon?: number;
   lat?: number;
+}
+
+export interface GroupedOption {
+  label: string;
+  options: Option[];
 }
 
 interface DropdownProps extends FormItemChildProps {
@@ -21,6 +26,7 @@ interface DropdownProps extends FormItemChildProps {
   value?: Option;
   options: Option[];
   isMulti?: boolean;
+  formatGroupLabel?: (data: GroupedOption) => JSX.Element;
 }
 
 export const Dropdown = ({
@@ -34,6 +40,7 @@ export const Dropdown = ({
   onChange,
   name,
   id,
+  formatGroupLabel,
 }: DropdownProps): JSX.Element => {
   const handleDropdownOnChange = (newValue: Option) => {
     if (!!onChange) onChange(name, newValue);
@@ -50,6 +57,7 @@ export const Dropdown = ({
       isLoading={isLoading}
       isClearable={isClearable}
       isSearchable={isSearchable}
+      formatGroupLabel={formatGroupLabel}
       id={id}
       name={name}
       formatOptionLabel={(option: Option) => (

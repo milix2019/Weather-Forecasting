@@ -28,7 +28,7 @@ const chartData: ChartProps = {
         show: false, // to hide/show config on top
       },
     },
-    colors: ['#77B6EA', 'red', 'green'],
+    colors: ['#77B6EA', '#743ae9', 'green'],
     dataLabels: {
       enabled: true,
     },
@@ -165,7 +165,7 @@ const Dashboard = (): JSX.Element => {
     const ArrayTemp: number[] = [];
     const ArrayWind: number[] = [];
     // const ArrayPressure: number[] = [];
-    const ArrayXaxis: number[] = [];
+    const ArrayXaxis: string[] = [];
 
     interface Series {
       name: string;
@@ -184,7 +184,10 @@ const Dashboard = (): JSX.Element => {
         ArrayWind.push(hr.wind_speed);
         // ArrayPressure.push(hr.pressure);
         // date prep
-        const dateConve = new Date(hr.dt * 1000).getDay();
+        const dateConve = new Date(hr.dt * 1000).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
         ArrayXaxis.push(dateConve);
       }
     }
@@ -202,7 +205,7 @@ const Dashboard = (): JSX.Element => {
       options: {
         ...chart.options,
         xaxis: {
-          categories: [],
+          categories: ArrayXaxis,
         },
       },
     });
@@ -249,6 +252,8 @@ const Dashboard = (): JSX.Element => {
 
   // Write to LocalStorage
   const writeToLocalStorage = (value: Option, key?: string) => {
+    if (!value.label) return;
+
     let array: Option[] = readLocalStorage(key) ? readLocalStorage(key) : [];
     array = [
       ...array,
@@ -282,9 +287,15 @@ const Dashboard = (): JSX.Element => {
           <Dropdown
             name="city"
             onChange={(_, value: Option) => {
-              setSelectedCity(value);
-              getWeatherByLocation(value?.lat, value?.lon, unit);
-              writeToLocalStorage(value, localStorageDefaultKey);
+              if (value) {
+                // set a dropdown value
+                setSelectedCity(value);
+                // call action from redicer
+                getWeatherByLocation(value?.lat, value?.lon, unit);
+                // update our local storage
+                writeToLocalStorage(value, localStorageDefaultKey);
+              }
+              //
             }}
             isMulti={false}
             options={cities}

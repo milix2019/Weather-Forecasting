@@ -83,12 +83,18 @@
         }
       }
     }
+    &--condition {
+      @include lessThan($screen-sm) {
+        margin-left: rem(16px);
+      }
+    }
     &--daily {
       height: 150px;
       display: flex;
       gap: 5px;
       @include lessThan($screen-sm) {
         flex-wrap: wrap;
+        justify-content: center;
       }
       .daily--item {
         height: 80%;
